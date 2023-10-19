@@ -6,18 +6,22 @@ import { LoginUserInput, LoginUserSchema } from "@/lib/validations/user.schema";
 import { compare } from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
+import Users from '../../data';
 
 export async function POST(req: NextRequest) {
     try {
         const body = (await req.json()) as LoginUserInput;
         const data = LoginUserSchema.parse(body);
-        const user = await prisma.user.findUnique({
-            where: { email: data.email },
-        });
+
+        // const user = await prisma.authUser.findUnique({
+        //     where: { email: data.email },
+        // });
+        const user = Users.find(item => item.email === data.email);
+
         if (!user || !(await compare(data.password, user.password))) {
             return getErrorResponse(401, "Invalid email or password");
         }
-        const token = await signJWT({ sub: user.id }, { exp: `${NEXT_PUBLIC_JWT_EXPIRES_IN}m` });
+        const token = await signJWT({ sub: '' + user.id }, { exp: `${NEXT_PUBLIC_JWT_EXPIRES_IN}m` });
         const tokenMaxAge = parseInt(NEXT_PUBLIC_JWT_EXPIRES_IN) * 60;
         const cookieOptions = {
             name: "token",
