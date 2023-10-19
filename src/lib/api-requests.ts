@@ -70,3 +70,7 @@ export async function apiGetAuthUser(token?: string | null): Promise<FilteredUse
     // console.log('apiGetAuthUser', response);
     return handleResponse<UserResponse>(response).then(({ data }) => data.user);
 }
+
+export async function apiGetTable() {
+    
+}
