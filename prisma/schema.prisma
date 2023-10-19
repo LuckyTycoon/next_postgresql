@@ -3,19 +3,121 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("POSTGRES_PRISMA_URL")
-  directUrl         = env("POSTGRES_URL_NON_POOLING")
-  shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String    @id @unique @default(uuid())
-  name      String
-  email     String    @unique
-  password  String
-  role      String?   @default("user")
-  verified  Boolean?  @default(false)
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique @db.VarChar(80)
+  auth_group_permissions auth_group_permissions[]
+  auth_user_groups       auth_user_groups[]
+
+  @@index([name], map: "auth_group_name_253ae2a6331666e8_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_group_permissions {
+  id              Int             @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_group_id_689710a9a73b7457_fk_auth_group_id")
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permission_id_1f49ccbbdc69d2fc_fk_auth_permission_id")
+
+  @@unique([group_id, permission_id])
+  @@index([group_id], map: "auth_group_permissions_0e939a4f")
+  @@index([group_id], map: "auth_group_permissions_5f4a8d8")
+  @@index([permission_id], map: "auth_group_permissions_8373b171")
+  @@index([permission_id], map: "auth_group_permissions_83df41e")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_permission {
+  id                         Int                          @id @default(autoincrement())
+  name                       String                       @db.VarChar(255)
+  content_type_id            Int
+  codename                   String                       @db.VarChar(100)
+  auth_group_permissions     auth_group_permissions[]
+  // django_content_type        django_content_type          @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_content_type_id_508cf46651277a81_fk_django_content_type_id")
+  auth_user_user_permissions auth_user_user_permissions[]
+
+  @@unique([content_type_id, codename])
+  @@index([content_type_id], map: "auth_permission_37ef4eb4")
+  @@index([content_type_id], map: "auth_permission_417f1b1c")
+}
+
+model auth_user {
+  id                         Int                          @id @default(autoincrement())
+  password                   String                       @db.VarChar(128)
+  last_login                 DateTime?                    @db.Timestamptz(6)
+  is_superuser               Boolean
+  username                   String                       @unique @db.VarChar(30)
+  first_name                 String                       @db.VarChar(30)
+  last_name                  String                       @db.VarChar(30)
+  email                      String                       @db.VarChar(254)
+  is_staff                   Boolean
+  is_active                  Boolean
+  date_joined                DateTime                     @db.Timestamptz(6)
+  auth_user_groups           auth_user_groups[]
+  auth_user_user_permissions auth_user_user_permissions[]
+  // django_admin_log           django_admin_log[]
+
+  @@index([username], map: "auth_user_username_51b3b110094b8aae_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_user_groups {
+  id         Int        @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  auth_group auth_group @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_group_id_33ac548dcf5f8e37_fk_auth_group_id")
+  auth_user  auth_user  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_groups_user_id_4b5ed4ffdb8fd9b0_fk_auth_user_id")
+
+  @@unique([user_id, group_id])
+  @@index([group_id], map: "auth_user_groups_0e939a4f")
+  @@index([group_id], map: "auth_user_groups_5f412f9a")
+  @@index([user_id], map: "auth_user_groups_6340c63c")
+  @@index([user_id], map: "auth_user_groups_e8701ad4")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_user_user_permissions {
+  id              Int             @id @default(autoincrement())
+  user_id         Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user__permission_id_384b62483d7071f0_fk_auth_permission_id")
+  auth_user       auth_user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_user_user_permiss_user_id_7f0938558328534a_fk_auth_user_id")
+
+  @@unique([user_id, permission_id])
+  @@index([permission_id], map: "auth_user_user_permissions7493")
+  @@index([permission_id], map: "auth_user_user_permissions_8373b171")
+  @@index([user_id], map: "auth_user_user_permissions_e8701ad4")
+  @@index([user_id], map: "auth_user_user_permissionsbd5d")
+}
+
+model rnc_locus {
+  id                BigInt              @id @default(autoincrement())
+  assembly_id       String
+  locus_name        String
+  public_locus_name String              @unique
+  chromosome        String
+  strand            String
+  locus_start       Int
+  locus_stop        Int
+  member_count      Int
+  // ensembl_assembly  ensembl_assembly    @relation(fields: [assembly_id], references: [assembly_id], onDelete: Cascade, onUpdate: NoAction)
+  rnc_locus_members rnc_locus_members[]
+
+  @@unique([assembly_id, locus_name])
+}
+
+model rnc_locus_members {
+  id                   BigInt               @id @default(autoincrement())
+  urs_taxid            String
+  region_id            Int                  @unique
+  locus_id             BigInt
+  membership_status    String
+  rnc_locus            rnc_locus            @relation(fields: [locus_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  // rnc_sequence_regions rnc_sequence_regions @relation(fields: [region_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  // rnc_rna_precomputed  rnc_rna_precomputed  @relation(fields: [urs_taxid], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
