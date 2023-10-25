@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     const assemblyId = url.searchParams.get('assemblyId'); // `assemblyId`, int, single value (rl table)
     const regionId = url.searchParams.get('regionId'); // `regionId`, enum, (rld table)
     const membershipStatus = url.searchParams.get('membershipStatus'); // `membershipStatus`, varchar,single value (rld table)
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '100'); // page size
+    const pageSize = parseInt(url.searchParams.get('pageSize') || '1000'); // page size
     const page = parseInt(url.searchParams.get('page') || '1'); // page number
 
     /// Make Query Object
